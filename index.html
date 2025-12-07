@@ -293,34 +293,6 @@
 
         .btn-reset:hover { background: rgba(255, 107, 157, 0.1); }
 
-        .participants-preview {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            max-height: 50px;
-            overflow-y: auto;
-            padding: 8px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-        }
-
-        .participant-tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
-            padding: 3px 8px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            font-size: 0.7rem;
-        }
-
-        .participant-color {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-        }
-
         /* Rankings in Sidebar */
         .rankings {
             flex: 1;
@@ -920,34 +892,113 @@
         ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
 
-        .coffee-banner {
+        /* 토글 스위치 */
+        .toggle-switch {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-top: 12px;
-            padding: 10px 16px;
-            background: linear-gradient(135deg, #ffdd00 0%, #ffaa00 100%);
-            border-radius: 12px;
-            text-decoration: none;
-            color: #1a1a1a;
-            font-weight: 600;
-            font-size: 0.85rem;
+            gap: 10px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .toggle-switch input {
+            display: none;
+        }
+
+        .toggle-slider {
+            width: 40px;
+            height: 22px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 11px;
+            position: relative;
             transition: all 0.3s ease;
             flex-shrink: 0;
         }
 
-        .coffee-banner:hover {
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: #fff;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background: var(--accent-cyan);
+        }
+
+        .toggle-switch input:checked + .toggle-slider::before {
+            transform: translateX(18px);
+        }
+
+        .toggle-label {
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+
+        .toggle-switch input:checked ~ .toggle-label {
+            color: #fff;
+        }
+
+        /* 결과 버튼 그룹 */
+        .result-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        /* 하단 버튼 그룹 */
+        .bottom-btn-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .bottom-btn {
+            flex: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 14px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 1rem;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .bottom-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
             transform: translateY(-2px);
+        }
+
+        .bottom-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .bottom-btn:disabled:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: none;
+        }
+
+        .bottom-btn.coffee {
+            background: linear-gradient(135deg, #ffdd00 0%, #ffaa00 100%);
+            color: #1a1a1a;
+            border: none;
+        }
+
+        .bottom-btn.coffee:hover {
             box-shadow: 0 4px 15px rgba(255, 221, 0, 0.4);
-        }
-
-        .coffee-icon {
-            font-size: 1.1rem;
-        }
-
-        .coffee-text {
-            letter-spacing: 0.5px;
         }
     </style>
 </head>
@@ -984,11 +1035,12 @@
                     </select>
                 </div>
 
-                <div class="input-group compact">
-                    <div class="section-title">참여자 미리보기</div>
-                    <div class="participants-preview" id="participantsPreview">
-                        <span style="color: #666;">참여자를 입력해주세요</span>
-                    </div>
+                <div class="input-group">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="firstWinsToggle" checked>
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-label" id="firstWinsLabel">먼저 들어온 순서가 1등</span>
+                    </label>
                 </div>
 
                 <div class="btn-group">
@@ -1012,10 +1064,15 @@
                     </div>
                 </div>
                 
-                <a href="https://buymeacoffee.com/euiyun" target="_blank" class="coffee-banner">
-                    <span class="coffee-icon">☕</span>
-                    <span class="coffee-text">Buy me a coffee</span>
-                </a>
+                <div class="bottom-btn-group">
+                    <button class="bottom-btn" id="copyResultBtn2" disabled title="결과 복사">📋</button>
+                    <a href="https://github.com/geniuskey/marble-olympics" target="_blank" class="bottom-btn" title="GitHub 저장소">
+                        <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                        </svg>
+                    </a>
+                    <a href="https://buymeacoffee.com/euiyun" target="_blank" class="bottom-btn coffee" title="개발자에게 커피 사주기">☕</a>
+                </div>
             </div>
         </aside>
 
@@ -1067,7 +1124,10 @@
             <div class="final-rankings-title">🏁 최종 순위</div>
             <div id="finalRankingList"></div>
         </div>
-        <button class="btn btn-primary" id="closeWinnerBtn">확인</button>
+        <div class="result-buttons">
+            <button class="btn btn-secondary" id="copyResultBtn">📋 결과 복사</button>
+            <button class="btn btn-primary" id="closeWinnerBtn">확인</button>
+        </div>
     </div>
 
     <script>
@@ -1885,6 +1945,10 @@
                 this.animationId = null;
                 this.lastTime = 0;
                 this.gameStartTime = 0;
+                this.firstWins = true;  // true: 먼저 들어온 순서가 1등, false: 나중에 들어온 순서가 1등
+                
+                // 기준 너비 (PC 기준)
+                this.baseWidth = 600;
 
                 this.colors = [
                     '#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#54a0ff',
@@ -1895,6 +1959,11 @@
 
                 this.resize();
                 window.addEventListener('resize', () => this.resize());
+            }
+            
+            // 화면 크기에 따른 스케일 계산
+            getScale() {
+                return Math.min(1, this.canvas.width / this.baseWidth);
             }
 
             resize() {
@@ -1940,6 +2009,7 @@
             setupWorld() {
                 const w = this.canvas.width;
                 const viewH = this.canvas.height;
+                const scale = this.getScale();
 
                 this.world = new PhysicsWorld(w, viewH);
 
@@ -1947,9 +2017,16 @@
                 if (MapGenerators[this.mapType]) {
                     MapGenerators[this.mapType](this.world, w, this.world.height);
                 }
+                
+                // 모든 장애물에 스케일 적용
+                for (const obs of this.world.obstacles) {
+                    if (obs.radius) obs.radius *= scale;
+                    if (obs.length) obs.length *= scale;
+                }
 
-                // Create balls
-                const ballRadius = Math.max(10, Math.min(18, 250 / Math.max(1, this.participants.length)));
+                // Create balls - 스케일 적용
+                const baseBallRadius = Math.max(10, Math.min(18, 250 / Math.max(1, this.participants.length)));
+                const ballRadius = baseBallRadius * scale;
                 const startArea = w * 0.6;
                 const startX = (w - startArea) / 2;
 
@@ -2039,66 +2116,123 @@
             updateRankings() {
                 const list = document.getElementById('rankingList');
                 const medals = ['🥇', '🥈', '🥉'];
-                const finishedBalls = this.world.rankings;  // 도착한 공들
+                const totalParticipants = this.world.balls.length;
+                const finishedBalls = [...this.world.rankings];  // 도착한 공들 (도착 순서대로)
                 const racingBalls = this.world.balls.filter(b => !b.finished);  // 진행 중인 공들
-                
-                // 진행 중인 공들을 Y 위치 기준 정렬 (큰 Y가 앞서 있는 것)
-                const sortedRacing = [...racingBalls].sort((a, b) => b.pos.y - a.pos.y);
                 
                 let html = '';
                 
-                // 1. 도착한 공들 먼저 표시
-                const firstTime = finishedBalls[0]?.finishTime || 0;
-                const firstTimeInSec = firstTime ? (firstTime - this.gameStartTime) / 1000 : 0;
-                
-                finishedBalls.forEach((ball, i) => {
-                    const rankClass = i < 3 ? `rank-${i + 1}` : '';
-                    const ballTimeInSec = (ball.finishTime - this.gameStartTime) / 1000;
-                    let timeDisplay;
-                    if (i === 0) {
-                        timeDisplay = `${ballTimeInSec.toFixed(2)}s`;
-                    } else {
-                        const diff = ballTimeInSec - firstTimeInSec;
-                        timeDisplay = `+${diff.toFixed(2)}s`;
-                    }
+                if (this.firstWins) {
+                    // ===== 먼저 들어온 순서가 1등 =====
+                    // 진행 중인 공들을 Y 위치 기준 정렬 (Y 큰 것이 앞서 있음)
+                    const sortedRacing = [...racingBalls].sort((a, b) => b.pos.y - a.pos.y);
                     
-                    html += `
-                        <div class="ranking-item ${rankClass}">
-                            <div class="ranking-position">${i + 1}</div>
-                            <div class="ranking-color" style="background: ${ball.color};"></div>
-                            <div class="ranking-name">${ball.name}</div>
-                            ${i < 3 ? `<span class="ranking-medal">${medals[i]}</span>` : ''}
-                            <span class="ranking-time">${timeDisplay}</span>
-                        </div>
-                    `;
-                });
-                
-                // 2. 진행 중인 공들 표시 (Y 위치 기준 순위)
-                if (sortedRacing.length > 0) {
-                    // 구분선 추가 (도착자가 있을 때만)
-                    if (finishedBalls.length > 0) {
-                        html += `<div class="ranking-separator">— 레이싱 중 —</div>`;
-                    }
+                    // 1. 도착한 공들 먼저 표시
+                    const firstTime = finishedBalls[0]?.finishTime || 0;
+                    const firstTimeInSec = firstTime ? (firstTime - this.gameStartTime) / 1000 : 0;
                     
-                    sortedRacing.forEach((ball, i) => {
-                        const overallRank = finishedBalls.length + i + 1;
-                        const rankClass = overallRank <= 3 ? `rank-${overallRank}` : '';
+                    finishedBalls.forEach((ball, i) => {
+                        const rankClass = i < 3 ? `rank-${i + 1}` : '';
+                        const ballTimeInSec = (ball.finishTime - this.gameStartTime) / 1000;
+                        let timeDisplay;
+                        if (i === 0) {
+                            timeDisplay = `${ballTimeInSec.toFixed(2)}s`;
+                        } else {
+                            const diff = ballTimeInSec - firstTimeInSec;
+                            timeDisplay = `+${diff.toFixed(2)}s`;
+                        }
                         
-                        // 진행률 계산 (0~100%)
+                        html += `
+                            <div class="ranking-item ${rankClass}">
+                                <div class="ranking-position">${i + 1}</div>
+                                <div class="ranking-color" style="background: ${ball.color};"></div>
+                                <div class="ranking-name">${ball.name}</div>
+                                ${i < 3 ? `<span class="ranking-medal">${medals[i]}</span>` : ''}
+                                <span class="ranking-time">${timeDisplay}</span>
+                            </div>
+                        `;
+                    });
+                    
+                    // 2. 진행 중인 공들 표시
+                    if (sortedRacing.length > 0) {
+                        if (finishedBalls.length > 0) {
+                            html += `<div class="ranking-separator">— 레이싱 중 —</div>`;
+                        }
+                        
+                        sortedRacing.forEach((ball, i) => {
+                            const overallRank = finishedBalls.length + i + 1;
+                            const rankClass = overallRank <= 3 ? `rank-${overallRank}` : '';
+                            const progress = Math.min(100, Math.max(0, 
+                                (ball.pos.y / this.world.finishLine) * 100
+                            )).toFixed(0);
+                            
+                            html += `
+                                <div class="ranking-item racing ${rankClass}">
+                                    <div class="ranking-position">${overallRank}</div>
+                                    <div class="ranking-color" style="background: ${ball.color};"></div>
+                                    <div class="ranking-name">${ball.name}</div>
+                                    ${overallRank <= 3 ? `<span class="ranking-medal">${medals[overallRank-1]}</span>` : ''}
+                                    <span class="ranking-progress">${progress}%</span>
+                                </div>
+                            `;
+                        });
+                    }
+                } else {
+                    // ===== 늦게 들어온 순서가 1등 =====
+                    // 진행 중인 공들을 Y 위치 기준 정렬 (Y 작은 것이 1등에 가까움 - 아직 덜 내려온 것)
+                    const sortedRacing = [...racingBalls].sort((a, b) => a.pos.y - b.pos.y);
+                    
+                    // 1. 진행 중인 공들 먼저 표시 (아직 도착 안 한 공이 상위)
+                    sortedRacing.forEach((ball, i) => {
+                        const rank = i + 1;
+                        const rankClass = rank <= 3 ? `rank-${rank}` : '';
                         const progress = Math.min(100, Math.max(0, 
                             (ball.pos.y / this.world.finishLine) * 100
                         )).toFixed(0);
                         
                         html += `
                             <div class="ranking-item racing ${rankClass}">
-                                <div class="ranking-position">${overallRank}</div>
+                                <div class="ranking-position">${rank}</div>
                                 <div class="ranking-color" style="background: ${ball.color};"></div>
                                 <div class="ranking-name">${ball.name}</div>
-                                ${overallRank <= 3 ? `<span class="ranking-medal">${medals[overallRank-1]}</span>` : ''}
+                                ${rank <= 3 ? `<span class="ranking-medal">${medals[rank-1]}</span>` : ''}
                                 <span class="ranking-progress">${progress}%</span>
                             </div>
                         `;
                     });
+                    
+                    // 2. 도착한 공들 표시 (도착한 순서 역순 = 먼저 도착한 게 꼴찌)
+                    if (finishedBalls.length > 0) {
+                        if (racingBalls.length > 0) {
+                            html += `<div class="ranking-separator">— 순위 확정 —</div>`;
+                        }
+                        
+                        // 도착한 공들을 뒤집어서 표시 (먼저 도착한 게 제일 아래)
+                        const reversedFinished = [...finishedBalls].reverse();
+                        
+                        reversedFinished.forEach((ball, i) => {
+                            // 순위: 레이싱 중인 공 수 + i + 1 (먼저 도착한 게 뒤 순위)
+                            const rank = racingBalls.length + i + 1;
+                            const isLast = rank === totalParticipants;
+                            let rankClass = '';
+                            if (rank <= 3) rankClass = `rank-${rank}`;
+                            else if (isLast) rankClass = 'rank-last';
+                            
+                            const ballTimeInSec = (ball.finishTime - this.gameStartTime) / 1000;
+                            const timeDisplay = `${ballTimeInSec.toFixed(2)}s`;
+                            
+                            html += `
+                                <div class="ranking-item ${rankClass}">
+                                    <div class="ranking-position">${rank}</div>
+                                    <div class="ranking-color" style="background: ${ball.color};"></div>
+                                    <div class="ranking-name">${ball.name}</div>
+                                    ${rank <= 3 ? `<span class="ranking-medal">${medals[rank-1]}</span>` : ''}
+                                    ${isLast ? `<span class="ranking-medal">💀</span>` : ''}
+                                    <span class="ranking-time">${timeDisplay}</span>
+                                </div>
+                            `;
+                        });
+                    }
                 }
                 
                 // 아무도 없으면
@@ -2110,7 +2244,13 @@
             }
 
             showWinner(isTimeout = false) {
-                const rankings = this.world.rankings;
+                let rankings = [...this.world.rankings];
+                
+                // firstWins가 false면 순위 뒤집기
+                if (!this.firstWins) {
+                    rankings = rankings.reverse();
+                }
+                
                 const winner = rankings[0];
 
                 // 타임아웃인 경우 다른 메시지 표시
@@ -2127,11 +2267,15 @@
                 
                 const medals = ['🥇', '🥈', '🥉'];
                 
-                // 첫 번째로 정상 도착한 공 찾기
+                // 첫 번째로 정상 도착한 공 찾기 (표시용)
                 const firstFinisher = rankings.find(b => !b.timedOut);
                 const firstTimeInSec = firstFinisher 
                     ? (firstFinisher.finishTime - this.gameStartTime) / 1000 
-                    : 60;  // 전원 타임아웃이면 60초
+                    : 60;
+
+                // 결과 텍스트 생성 (복사용)
+                this.lastResultText = `🏅 구슬 올림픽 결과\n`;
+                this.lastResultText += `${this.firstWins ? '(먼저 도착 = 1등)' : '(나중 도착 = 1등)'}\n\n`;
 
                 rankings.forEach((ball, i) => {
                     const item = document.createElement('div');
@@ -2149,21 +2293,23 @@
                     // 시간/진행도 표시
                     let timeDisplay;
                     if (ball.timedOut) {
-                        // 타임아웃된 공은 진행률 표시
                         timeDisplay = `${ball.progress.toFixed(0)}%`;
                     } else {
                         const ballTimeInSec = (ball.finishTime - this.gameStartTime) / 1000;
                         if (i === 0 || !firstFinisher) {
                             timeDisplay = `${ballTimeInSec.toFixed(2)}s`;
                         } else {
-                            const diff = ballTimeInSec - firstTimeInSec;
-                            timeDisplay = `${ballTimeInSec.toFixed(2)}s (+${diff.toFixed(2)}s)`;
+                            const diff = Math.abs(ballTimeInSec - firstTimeInSec);
+                            timeDisplay = this.firstWins 
+                                ? `${ballTimeInSec.toFixed(2)}s (+${diff.toFixed(2)}s)`
+                                : `${ballTimeInSec.toFixed(2)}s (-${diff.toFixed(2)}s)`;
                         }
                     }
                     
                     let medal = '';
-                    if (i < 3) medal = medals[i];
-                    else if (isLast && rankings.length > 3) medal = '💀';
+                    let medalText = '';
+                    if (i < 3) { medal = medals[i]; medalText = medals[i]; }
+                    else if (isLast && rankings.length > 3) { medal = '💀'; medalText = '💀'; }
                     
                     // 타임아웃된 공은 아이콘 추가
                     const timeoutIcon = ball.timedOut ? '⏱️ ' : '';
@@ -2176,12 +2322,47 @@
                         <span class="final-medal">${medal}</span>
                     `;
                     finalList.appendChild(item);
+                    
+                    // 결과 텍스트에 추가
+                    this.lastResultText += `${i + 1}위 ${medalText} ${ball.name} - ${timeDisplay}\n`;
                 });
 
                 document.getElementById('winnerOverlay').classList.add('show');
                 document.getElementById('liveIndicator').style.display = 'none';
+                
+                // 하단 결과 복사 버튼 활성화
+                const copyBtn2 = document.getElementById('copyResultBtn2');
+                if (copyBtn2) copyBtn2.disabled = false;
 
                 this.createConfetti();
+            }
+            
+            // 결과 복사
+            copyResult(targetBtn = null) {
+                if (!this.lastResultText) return;
+                
+                navigator.clipboard.writeText(this.lastResultText).then(() => {
+                    // 모달 내 버튼
+                    const btn = document.getElementById('copyResultBtn');
+                    const originalText = btn.textContent;
+                    btn.textContent = '✅ 복사됨!';
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                    }, 2000);
+                    
+                    // 하단 버튼 (아이콘만)
+                    const btn2 = document.getElementById('copyResultBtn2');
+                    if (btn2) {
+                        const originalIcon = btn2.textContent;
+                        btn2.textContent = '✅';
+                        setTimeout(() => {
+                            btn2.textContent = originalIcon;
+                        }, 2000);
+                    }
+                }).catch(err => {
+                    console.error('복사 실패:', err);
+                    alert('복사에 실패했습니다.');
+                });
             }
 
             createConfetti() {
@@ -2487,12 +2668,14 @@
             const game = new MarbleRoulette(canvas);
 
             const participantsInput = document.getElementById('participants');
-            const preview = document.getElementById('participantsPreview');
             const mapSelect = document.getElementById('mapSelect');
+            const firstWinsToggle = document.getElementById('firstWinsToggle');
             const shuffleBtn = document.getElementById('shuffleBtn');
             const startBtn = document.getElementById('startBtn');
             const resetBtn = document.getElementById('resetBtn');
             const closeWinnerBtn = document.getElementById('closeWinnerBtn');
+            const copyResultBtn = document.getElementById('copyResultBtn');
+            const copyResultBtn2 = document.getElementById('copyResultBtn2');
             const helpBtn = document.getElementById('helpBtn');
             const helpModal = document.getElementById('helpModal');
             const closeHelpBtn = document.getElementById('closeHelpBtn');
@@ -2514,43 +2697,40 @@
                 return participants;
             }
 
-            function updatePreview() {
+            function updateGame() {
                 const participants = parseParticipants(participantsInput.value);
-                
-                if (participants.length === 0) {
-                    preview.innerHTML = '<span style="color: #666;">참여자를 입력해주세요</span>';
-                    return;
-                }
-
-                const colors = game.colors;
-                preview.innerHTML = participants.map((name, i) => `
-                    <span class="participant-tag">
-                        <span class="participant-color" style="background: ${colors[i % colors.length]}"></span>
-                        ${name}
-                    </span>
-                `).join('');
-
                 game.setParticipants(participants);
             }
             
             // localStorage 키
             const STORAGE_KEY_PARTICIPANTS = 'marble-olympics-participants';
             const STORAGE_KEY_MAP = 'marble-olympics-map';
+            const STORAGE_KEY_FIRST_WINS = 'marble-olympics-first-wins';
             
             // 저장된 값 불러오기
             function loadSavedData() {
                 try {
                     const savedParticipants = localStorage.getItem(STORAGE_KEY_PARTICIPANTS);
                     const savedMap = localStorage.getItem(STORAGE_KEY_MAP);
+                    const savedFirstWins = localStorage.getItem(STORAGE_KEY_FIRST_WINS);
                     
                     if (savedParticipants) {
                         participantsInput.value = savedParticipants;
-                        updatePreview();
+                        updateGame();
                     }
                     
                     if (savedMap && ['chaos', 'pinball', 'funnel'].includes(savedMap)) {
                         mapSelect.value = savedMap;
                         game.setMap(savedMap);
+                    }
+                    
+                    if (savedFirstWins !== null) {
+                        const firstWins = savedFirstWins === 'true';
+                        firstWinsToggle.checked = firstWins;
+                        game.firstWins = firstWins;
+                        // 라벨 업데이트
+                        const label = document.getElementById('firstWinsLabel');
+                        label.textContent = firstWins ? '먼저 들어온 순서가 1등' : '늦게 들어온 순서가 1등';
                     }
                 } catch (e) {
                     console.warn('localStorage 불러오기 실패:', e);
@@ -2574,9 +2754,18 @@
                     console.warn('localStorage 저장 실패:', e);
                 }
             }
+            
+            // firstWins 저장
+            function saveFirstWins() {
+                try {
+                    localStorage.setItem(STORAGE_KEY_FIRST_WINS, firstWinsToggle.checked.toString());
+                } catch (e) {
+                    console.warn('localStorage 저장 실패:', e);
+                }
+            }
 
             participantsInput.addEventListener('input', () => {
-                updatePreview();
+                updateGame();
                 saveParticipants();
             });
 
@@ -2584,6 +2773,28 @@
             mapSelect.addEventListener('change', () => {
                 game.setMap(mapSelect.value);
                 saveMap();
+            });
+            
+            // firstWins 토글 텍스트 업데이트 함수
+            function updateFirstWinsLabel() {
+                const label = document.getElementById('firstWinsLabel');
+                if (firstWinsToggle.checked) {
+                    label.textContent = '먼저 들어온 순서가 1등';
+                } else {
+                    label.textContent = '늦게 들어온 순서가 1등';
+                }
+            }
+            
+            // firstWins 토글
+            firstWinsToggle.addEventListener('change', () => {
+                game.firstWins = firstWinsToggle.checked;
+                updateFirstWinsLabel();
+                saveFirstWins();
+                
+                // 게임 중이면 초기화
+                if (game.isRunning) {
+                    game.reset();
+                }
             });
 
             // 도움말 모달
@@ -2604,7 +2815,7 @@
             shuffleBtn.addEventListener('click', () => {
                 if (game.participants.length > 0) {
                     game.shuffle();
-                    updatePreview();
+                    updateGame();
                 }
             });
 
@@ -2619,8 +2830,17 @@
             });
 
             resetBtn.addEventListener('click', () => game.reset());
+            
             closeWinnerBtn.addEventListener('click', () => {
                 document.getElementById('winnerOverlay').classList.remove('show');
+            });
+            
+            copyResultBtn.addEventListener('click', () => {
+                game.copyResult();
+            });
+            
+            copyResultBtn2.addEventListener('click', () => {
+                game.copyResult(copyResultBtn2);
             });
 
             // Initial setup
