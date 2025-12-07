@@ -434,6 +434,30 @@
             font-family: monospace;
         }
 
+        .ranking-progress {
+            font-size: 0.6rem;
+            color: var(--accent-cyan);
+            font-family: monospace;
+            min-width: 32px;
+            text-align: right;
+        }
+
+        .ranking-separator {
+            text-align: center;
+            color: #555;
+            font-size: 0.6rem;
+            padding: 6px 0;
+            margin: 4px 0;
+            border-top: 1px dashed rgba(255,255,255,0.1);
+            border-bottom: 1px dashed rgba(255,255,255,0.1);
+        }
+
+        .ranking-item.racing {
+            opacity: 0.85;
+            background: rgba(0, 212, 255, 0.05);
+            border: 1px solid rgba(0, 212, 255, 0.15);
+        }
+
         .ranking-remaining {
             text-align: center;
             color: #666;
@@ -765,11 +789,93 @@
         }
 
         @media (max-width: 900px) {
-            .container { grid-template-columns: 1fr; }
-            .sidebar { order: 2; max-height: none; }
+            .container { 
+                grid-template-columns: 1fr; 
+                padding: 10px;
+                gap: 15px;
+            }
+            .sidebar { 
+                order: 2; 
+                max-height: none;
+                padding: 15px;
+                border-radius: 16px;
+            }
             .game-area { order: 1; }
-            .canvas-wrapper { min-height: 450px; }
-            .winner-name { font-size: 2.5rem; }
+            .canvas-wrapper { 
+                min-height: 60vh;
+                border-radius: 16px;
+            }
+            .winner-name { font-size: 2rem; }
+            .logo { font-size: 1.2rem; }
+            .section-title { font-size: 0.75rem; }
+            textarea { font-size: 14px; min-height: 60px; }
+            .btn { padding: 10px 14px; font-size: 0.8rem; }
+            .sidebar-top { gap: 12px; }
+            .input-group { gap: 6px; }
+        }
+
+        /* 모바일 가로 모드 최적화 */
+        @media (max-width: 900px) and (orientation: landscape) {
+            .container {
+                grid-template-columns: 1fr 280px;
+                min-height: 100vh;
+            }
+            .sidebar { 
+                order: 2;
+                max-height: 100vh;
+                overflow-y: auto;
+            }
+            .game-area { order: 1; }
+            .canvas-wrapper { 
+                min-height: calc(100vh - 40px);
+            }
+        }
+
+        /* 아주 작은 화면 (세로 모드) */
+        @media (max-width: 480px) {
+            .container { padding: 8px; gap: 10px; }
+            .sidebar { padding: 12px; }
+            .canvas-wrapper { min-height: 50vh; }
+            .logo { font-size: 1.1rem; }
+            .btn-group { flex-wrap: wrap; }
+            .btn { flex: 1; min-width: 80px; }
+            .participants-preview { max-height: 40px; }
+            .ranking-item { padding: 6px 8px; font-size: 0.7rem; }
+            .ranking-position { width: 18px; height: 18px; font-size: 0.6rem; }
+            .help-btn { width: 28px; height: 28px; font-size: 0.85rem; }
+        }
+
+        /* 모바일 가로 모드 권장 배너 */
+        .rotate-hint {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 8px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
+            color: white;
+            text-align: center;
+            font-size: 0.75rem;
+            z-index: 3000;
+            animation: slideDown 0.3s ease;
+        }
+
+        .rotate-hint.show {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+
+        @media (max-width: 900px) and (orientation: portrait) {
+            .rotate-hint { display: block; }
+        }
+
+        @media (min-width: 901px), (orientation: landscape) {
+            .rotate-hint { display: none !important; }
         }
 
         ::-webkit-scrollbar { width: 6px; }
@@ -809,6 +915,10 @@
     </style>
 </head>
 <body>
+    <div class="rotate-hint" id="rotateHint">
+        📱 가로 모드로 회전하면 더 좋은 경험을 할 수 있어요! 
+        <button onclick="this.parentElement.style.display='none'" style="background:none;border:none;color:white;margin-left:10px;cursor:pointer;">✕</button>
+    </div>
     <div class="bg-effects"></div>
 
     <div class="container">
@@ -1863,21 +1973,20 @@
 
             updateRankings() {
                 const list = document.getElementById('rankingList');
-                
-                // 아직 아무도 도착 안 했으면
-                if (this.world.rankings.length === 0) {
-                    const remaining = this.world.balls.filter(b => !b.finished).length;
-                    list.innerHTML = `<div class="ranking-placeholder">⏳ ${remaining}명 레이싱 중...</div>`;
-                    return;
-                }
-                
-                // 도착한 공이 있으면 순위 표시
-                let html = '';
                 const medals = ['🥇', '🥈', '🥉'];
-                const firstTime = this.world.rankings[0]?.finishTime || 0;
+                const finishedBalls = this.world.rankings;  // 도착한 공들
+                const racingBalls = this.world.balls.filter(b => !b.finished);  // 진행 중인 공들
+                
+                // 진행 중인 공들을 Y 위치 기준 정렬 (큰 Y가 앞서 있는 것)
+                const sortedRacing = [...racingBalls].sort((a, b) => b.pos.y - a.pos.y);
+                
+                let html = '';
+                
+                // 1. 도착한 공들 먼저 표시
+                const firstTime = finishedBalls[0]?.finishTime || 0;
                 const firstTimeInSec = firstTime ? (firstTime - this.gameStartTime) / 1000 : 0;
-
-                this.world.rankings.forEach((ball, i) => {
+                
+                finishedBalls.forEach((ball, i) => {
                     const rankClass = i < 3 ? `rank-${i + 1}` : '';
                     const ballTimeInSec = (ball.finishTime - this.gameStartTime) / 1000;
                     let timeDisplay;
@@ -1898,11 +2007,38 @@
                         </div>
                     `;
                 });
-
-                // 아직 도착 안 한 공들 수 표시
-                const remaining = this.world.balls.filter(b => !b.finished).length;
-                if (remaining > 0) {
-                    html += `<div class="ranking-remaining">⏳ ${remaining}명 진행 중...</div>`;
+                
+                // 2. 진행 중인 공들 표시 (Y 위치 기준 순위)
+                if (sortedRacing.length > 0) {
+                    // 구분선 추가 (도착자가 있을 때만)
+                    if (finishedBalls.length > 0) {
+                        html += `<div class="ranking-separator">— 레이싱 중 —</div>`;
+                    }
+                    
+                    sortedRacing.forEach((ball, i) => {
+                        const overallRank = finishedBalls.length + i + 1;
+                        const rankClass = overallRank <= 3 ? `rank-${overallRank}` : '';
+                        
+                        // 진행률 계산 (0~100%)
+                        const progress = Math.min(100, Math.max(0, 
+                            (ball.pos.y / this.world.finishLine) * 100
+                        )).toFixed(0);
+                        
+                        html += `
+                            <div class="ranking-item racing ${rankClass}">
+                                <div class="ranking-position">${overallRank}</div>
+                                <div class="ranking-color" style="background: ${ball.color};"></div>
+                                <div class="ranking-name">${ball.name}</div>
+                                ${overallRank <= 3 ? `<span class="ranking-medal">${medals[overallRank-1]}</span>` : ''}
+                                <span class="ranking-progress">${progress}%</span>
+                            </div>
+                        `;
+                    });
+                }
+                
+                // 아무도 없으면
+                if (html === '') {
+                    html = '<div class="ranking-placeholder">게임을 시작하면 순위가 표시됩니다</div>';
                 }
                 
                 list.innerHTML = html;
