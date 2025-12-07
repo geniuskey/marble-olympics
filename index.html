@@ -4,6 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🏅구슬 올림픽</title>
+	<!-- 개발자/라이선스 정보 (렌더링되지 않음) -->
+	<meta name="author" content="geniuskey" />
+	<meta name="reply-to" content="geniuskey@gmail.com" />
+	<meta name="copyright" content="© 2025 geniuskey. All rights reserved." />
+	<meta name="license" content="Personal use only. Redistribution prohibited without permission." />
+
+	<!--
+		Marble Olympics (구슬 올림픽)
+		Original Copyright Notice
+
+		Copyright (c) 2025 geniuskey
+
+		This web application is an original creation by the developer known as "geniuskey".
+		Any third-party registration of this work, including copyright filings made without
+		the author's consent, does not invalidate the author's original rights under 
+		Korean Copyright Law and international copyright principles.
+
+		Note:
+		- Copyright is automatically granted upon creation (“무조건 자동 발생”).
+		- Copyright registration by unrelated parties does NOT transfer ownership.
+		- MIT License permits reuse but does NOT abandon authorship or ownership.
+		- Unauthorized registration by third parties shall be considered invalid.
+
+		Original Creator: geniuskey (geniuskey@gmail.com)
+	-->
     <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -2437,12 +2462,58 @@
 
                 game.setParticipants(participants);
             }
+            
+            // localStorage 키
+            const STORAGE_KEY_PARTICIPANTS = 'marble-olympics-participants';
+            const STORAGE_KEY_MAP = 'marble-olympics-map';
+            
+            // 저장된 값 불러오기
+            function loadSavedData() {
+                try {
+                    const savedParticipants = localStorage.getItem(STORAGE_KEY_PARTICIPANTS);
+                    const savedMap = localStorage.getItem(STORAGE_KEY_MAP);
+                    
+                    if (savedParticipants) {
+                        participantsInput.value = savedParticipants;
+                        updatePreview();
+                    }
+                    
+                    if (savedMap && ['chaos', 'pinball', 'funnel'].includes(savedMap)) {
+                        mapSelect.value = savedMap;
+                        game.setMap(savedMap);
+                    }
+                } catch (e) {
+                    console.warn('localStorage 불러오기 실패:', e);
+                }
+            }
+            
+            // 참여자 저장
+            function saveParticipants() {
+                try {
+                    localStorage.setItem(STORAGE_KEY_PARTICIPANTS, participantsInput.value);
+                } catch (e) {
+                    console.warn('localStorage 저장 실패:', e);
+                }
+            }
+            
+            // 맵 선택 저장
+            function saveMap() {
+                try {
+                    localStorage.setItem(STORAGE_KEY_MAP, mapSelect.value);
+                } catch (e) {
+                    console.warn('localStorage 저장 실패:', e);
+                }
+            }
 
-            participantsInput.addEventListener('input', updatePreview);
+            participantsInput.addEventListener('input', () => {
+                updatePreview();
+                saveParticipants();
+            });
 
             // 맵 선택 드롭다운
             mapSelect.addEventListener('change', () => {
                 game.setMap(mapSelect.value);
+                saveMap();
             });
 
             // 도움말 모달
@@ -2483,6 +2554,7 @@
             });
 
             // Initial setup
+            loadSavedData();  // 저장된 참여자/맵 불러오기
             game.setupWorld();
             game.draw();
             document.getElementById('rankingList').innerHTML = '<div class="ranking-placeholder">게임을 시작하면 순위가 표시됩니다</div>';
