@@ -293,6 +293,17 @@
 
         .btn-reset:hover { background: rgba(255, 107, 157, 0.1); }
 
+        .btn-danger {
+            background: linear-gradient(135deg, #ff4757, #ff6b6b) !important;
+            border: none !important;
+            color: #fff !important;
+        }
+
+        .btn-danger:hover { 
+            background: linear-gradient(135deg, #ff6b6b, #ff4757) !important;
+            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
+        }
+
         /* Rankings in Sidebar */
         .rankings {
             flex: 1;
@@ -854,39 +865,6 @@
             .help-btn { width: 28px; height: 28px; font-size: 0.85rem; }
         }
 
-        /* 모바일 가로 모드 권장 배너 */
-        .rotate-hint {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            padding: 8px;
-            background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
-            color: white;
-            text-align: center;
-            font-size: 0.75rem;
-            z-index: 3000;
-            animation: slideDown 0.3s ease;
-        }
-
-        .rotate-hint.show {
-            display: block;
-        }
-
-        @keyframes slideDown {
-            from { transform: translateY(-100%); }
-            to { transform: translateY(0); }
-        }
-
-        @media (max-width: 900px) and (orientation: portrait) {
-            .rotate-hint { display: block; }
-        }
-
-        @media (min-width: 901px), (orientation: landscape) {
-            .rotate-hint { display: none !important; }
-        }
-
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 3px; }
         ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 3px; }
@@ -1045,10 +1023,6 @@
         <span class="toast-message">클립보드에 복사되었습니다!</span>
     </div>
     
-    <div class="rotate-hint" id="rotateHint">
-        📱 가로 모드로 회전하면 더 좋은 경험을 할 수 있어요! 
-        <button onclick="this.parentElement.style.display='none'" style="background:none;border:none;color:white;margin-left:10px;cursor:pointer;">✕</button>
-    </div>
     <div class="bg-effects"></div>
 
     <div class="container">
@@ -1194,9 +1168,9 @@
 
         // ===== Ball =====
         class Ball {
-            constructor(x, y, radius, color, name) {
+            constructor(x, y, radius, color, name, initialVelY = 0) {
                 this.pos = new Vector2(x, y);
-                this.vel = new Vector2(0, 0);
+                this.vel = new Vector2((Math.random() - 0.5) * 50, initialVelY);  // 초기 Y 속도 + 약간의 X 랜덤
                 this.radius = radius;
                 this.color = color;
                 this.name = name;
@@ -1353,6 +1327,7 @@
             '#ff6b9d',  // 핑크
             '#a855f7',  // 보라
             '#10ac84',  // 초록
+            '#ffd93d',  // 노랑
         ];
 
         class Booster {
@@ -1360,7 +1335,8 @@
                 this.type = 'booster';
                 this.x = x;
                 this.y = y;
-                this.angle = angle;
+                // 360도 랜덤 방향
+                this.angle = Math.random() * Math.PI * 2;
                 this.force = force;
                 this.radius = 18;
                 this.color = '#10ac84';
@@ -1407,8 +1383,8 @@
                 this.width = width;
                 this.viewHeight = viewHeight;  // 보이는 화면 높이
                 this.height = viewHeight * 3;  // 실제 맵 높이 (3배)
-                // 중력을 낮춰서 핀볼처럼 천천히 가속
-                this.gravity = new Vector2(0, 320);
+                // 중력 (10% 증가)
+                this.gravity = new Vector2(0, 352);
                 this.balls = [];
                 this.obstacles = [];
                 this.finishLine = this.height - 70;
@@ -1664,11 +1640,12 @@
             chaos(world, w, h) {
                 // h는 이제 실제 맵 높이 (viewHeight * 3)
                 
-                // ===== 포탈 4쌍 (색상별) =====
+                // ===== 포탈 5쌍 (색상별) =====
                 world.addObstacle(new Portal(w * 0.08, h * 0.08, w * 0.92, h * 0.22, PORTAL_COLORS[0]));  // 시안
                 world.addObstacle(new Portal(w * 0.15, h * 0.35, w * 0.85, h * 0.52, PORTAL_COLORS[1]));  // 핑크
                 world.addObstacle(new Portal(w * 0.1, h * 0.58, w * 0.5, h * 0.72, PORTAL_COLORS[2]));   // 보라
                 world.addObstacle(new Portal(w * 0.9, h * 0.75, w * 0.2, h * 0.88, PORTAL_COLORS[3]));   // 초록
+                world.addObstacle(new Portal(w * 0.5, h * 0.45, w * 0.5, h * 0.82, PORTAL_COLORS[4]));   // 노랑
                 
                 // ===== 섹션 1 (0% ~ 15%) - 시작 구간 =====
                 // 밀집 핀 필드
@@ -1794,11 +1771,12 @@
             },
 
             pinball(world, w, h) {
-                // ===== 포탈 4쌍 (색상별) =====
+                // ===== 포탈 5쌍 (색상별) =====
                 world.addObstacle(new Portal(w * 0.1, h * 0.05, w * 0.9, h * 0.18, PORTAL_COLORS[0]));   // 시안
                 world.addObstacle(new Portal(w * 0.08, h * 0.3, w * 0.5, h * 0.45, PORTAL_COLORS[1]));   // 핑크
                 world.addObstacle(new Portal(w * 0.92, h * 0.5, w * 0.15, h * 0.68, PORTAL_COLORS[2])); // 보라
                 world.addObstacle(new Portal(w * 0.3, h * 0.75, w * 0.7, h * 0.88, PORTAL_COLORS[3]));  // 초록
+                world.addObstacle(new Portal(w * 0.2, h * 0.62, w * 0.8, h * 0.38, PORTAL_COLORS[4]));  // 노랑
 
                 // ===== 섹션 1 (0% ~ 15%) - 상단 범퍼 클러스터 =====
                 world.addObstacle(new Bumper(w * 0.25, h * 0.03, 28));
@@ -1908,11 +1886,12 @@
             },
 
             funnel(world, w, h) {
-                // ===== 포탈 4쌍 (색상별) =====
+                // ===== 포탈 5쌍 (색상별) =====
                 world.addObstacle(new Portal(w * 0.08, h * 0.06, w * 0.92, h * 0.2, PORTAL_COLORS[0]));  // 시안
                 world.addObstacle(new Portal(w * 0.12, h * 0.32, w * 0.88, h * 0.48, PORTAL_COLORS[1])); // 핑크
                 world.addObstacle(new Portal(w * 0.1, h * 0.55, w * 0.5, h * 0.7, PORTAL_COLORS[2]));   // 보라
                 world.addObstacle(new Portal(w * 0.9, h * 0.72, w * 0.25, h * 0.88, PORTAL_COLORS[3])); // 초록
+                world.addObstacle(new Portal(w * 0.3, h * 0.42, w * 0.7, h * 0.78, PORTAL_COLORS[4])); // 노랑
 
                 // ===== 레이어 1 (0% ~ 15%) - 상단 깔때기 + 밀집 핀 필드 =====
                 world.addObstacle(new Wall(5, h * 0.005, w * 0.18, h * 0.06, 6));
@@ -2129,7 +2108,7 @@
                 // 핀 위치 수집
                 const pegs = this.world.obstacles.filter(o => o.type === 'peg');
                 
-                // 모든 장애물에 스케일 적용 + 범퍼/삼각형 최대 크기 제한 (80%)
+                // 모든 장애물에 스케일 적용 + 크기 제한
                 for (const obs of this.world.obstacles) {
                     if (obs.radius) {
                         obs.radius *= scale;
@@ -2140,6 +2119,10 @@
                     }
                     if (obs.length) {
                         obs.length *= scale;
+                        // 스피너 최대 길이 1.5배 증가
+                        if (obs.type === 'spinner') {
+                            obs.length = Math.min(obs.length * 1.5, 120 * scale);
+                        }
                     }
                     // 삼각형 크기 제한 (기존의 80%)
                     if (obs.type === 'triangle' && obs.size) {
@@ -2167,17 +2150,18 @@
                     return true;
                 });
 
-                // Create balls - 스케일 적용
+                // Create balls - 스케일 적용 + 초기 속도
                 const baseBallRadius = Math.max(10, Math.min(18, 250 / Math.max(1, this.participants.length)));
                 const ballRadius = baseBallRadius * scale;
                 const startArea = w * 0.6;
                 const startX = (w - startArea) / 2;
+                const initialVelY = 150 + Math.random() * 100;  // 초기 하향 속도
 
                 this.participants.forEach((name, i) => {
                     const x = startX + Math.random() * startArea;
                     const y = -20 - Math.random() * 80 - i * 8;
                     const color = this.colors[i % this.colors.length];
-                    this.world.addBall(new Ball(x, y, ballRadius, color, name));
+                    this.world.addBall(new Ball(x, y, ballRadius, color, name, initialVelY));
                 });
             }
 
@@ -2192,11 +2176,41 @@
 
                 document.getElementById('rankingList').innerHTML = '<div class="ranking-placeholder">첫 번째 도착자를 기다리는 중...</div>';
                 document.getElementById('liveIndicator').style.display = 'flex';
+                
+                // 버튼 텍스트 변경
+                document.getElementById('resetBtn').textContent = '⏹ 종료';
+                document.getElementById('resetBtn').classList.add('btn-danger');
             }
 
             stop() {
                 this.isRunning = false;
                 if (this.animationId) cancelAnimationFrame(this.animationId);
+            }
+            
+            // 게임 강제 종료 (현재 위치 기준 순위 결정)
+            forceEnd() {
+                if (!this.isRunning) {
+                    this.reset();
+                    return;
+                }
+                
+                const now = performance.now();
+                
+                // 아직 도착 안 한 공들을 Y 위치(진행도) 기준으로 정렬
+                const racingBalls = this.world.balls.filter(b => !b.finished);
+                racingBalls.sort((a, b) => b.pos.y - a.pos.y);  // Y가 큰 순서 (더 앞서 있는 순서)
+                
+                // 진행도 순서대로 rankings에 추가
+                racingBalls.forEach(ball => {
+                    ball.finished = true;
+                    ball.finishTime = now;
+                    ball.timedOut = true;
+                    ball.progress = (ball.pos.y / this.world.finishLine) * 100;
+                    this.world.rankings.push(ball);
+                });
+                
+                this.isRunning = false;
+                this.showWinner(true);
             }
 
             reset() {
@@ -2206,6 +2220,10 @@
                 document.getElementById('rankingList').innerHTML = '<div class="ranking-placeholder">게임을 시작하면 순위가 표시됩니다</div>';
                 document.getElementById('liveIndicator').style.display = 'none';
                 document.getElementById('winnerOverlay').classList.remove('show');
+                
+                // 버튼 텍스트 복원
+                document.getElementById('resetBtn').textContent = '↺ 초기화';
+                document.getElementById('resetBtn').classList.remove('btn-danger');
             }
 
             animate() {
@@ -2801,14 +2819,18 @@
                 ctx.arc(ball.pos.x, ball.pos.y, ball.radius, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Name
-                ctx.font = `bold ${Math.max(8, ball.radius * 0.65)}px "Noto Sans KR"`;
+                // Name - 구슬 오른쪽에 왼쪽 정렬로 표시
+                ctx.font = `bold ${Math.max(9, ball.radius * 0.7)}px "Noto Sans KR"`;
                 ctx.fillStyle = '#fff';
-                ctx.textAlign = 'center';
+                ctx.textAlign = 'left';
                 ctx.textBaseline = 'middle';
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.6)';
+                ctx.lineWidth = 3;
                 
-                const shortName = ball.name.length > 4 ? ball.name.slice(0, 3) + '..' : ball.name;
-                ctx.fillText(shortName, ball.pos.x, ball.pos.y);
+                const shortName = ball.name.length > 6 ? ball.name.slice(0, 5) + '..' : ball.name;
+                const textX = ball.pos.x + ball.radius + 4;  // 구슬 오른쪽으로 약간 띄움
+                ctx.strokeText(shortName, textX, ball.pos.y);  // 외곽선 먼저
+                ctx.fillText(shortName, textX, ball.pos.y);
             }
 
             darkenColor(color, percent) {
@@ -2988,7 +3010,7 @@
                 game.start();
             });
 
-            resetBtn.addEventListener('click', () => game.reset());
+            resetBtn.addEventListener('click', () => game.forceEnd());
             
             closeWinnerBtn.addEventListener('click', () => {
                 document.getElementById('winnerOverlay').classList.remove('show');
