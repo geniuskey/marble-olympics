@@ -4,7 +4,7 @@
 
 ## 🎮 데모
 
-[👉 플레이하기](https://euiyun.github.io/marble-olympics/)
+[👉 플레이하기](https://geniuskey.github.io/marble-olympics/)
 
 ## ✨ 기능
 
