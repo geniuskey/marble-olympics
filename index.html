@@ -99,6 +99,8 @@
             grid-template-columns: 300px 1fr;
             gap: 30px;
             min-height: 100vh;
+            height: 100vh;
+            box-sizing: border-box;
         }
 
         .sidebar {
@@ -582,6 +584,7 @@
         .game-area {
             display: flex;
             flex-direction: column;
+            height: 100%;
         }
 
         .canvas-wrapper {
@@ -592,7 +595,8 @@
             border-radius: 24px;
             overflow: hidden;
             flex: 1;
-            min-height: 600px;
+            min-height: 400px;
+            max-height: calc(100vh - 40px);
         }
 
         #gameCanvas {
@@ -822,7 +826,8 @@
             }
             .game-area { order: 1; }
             .canvas-wrapper { 
-                min-height: 60vh;
+                min-height: 50vh;
+                max-height: 60vh;
                 border-radius: 16px;
             }
             .winner-name { font-size: 2rem; }
@@ -845,9 +850,10 @@
                 max-height: 100vh;
                 overflow-y: auto;
             }
-            .game-area { order: 1; }
+            .game-area { order: 1; height: 100%; }
             .canvas-wrapper { 
                 min-height: calc(100vh - 40px);
+                max-height: calc(100vh - 40px);
             }
         }
 
@@ -855,7 +861,7 @@
         @media (max-width: 480px) {
             .container { padding: 8px; gap: 10px; }
             .sidebar { padding: 12px; }
-            .canvas-wrapper { min-height: 50vh; }
+            .canvas-wrapper { min-height: 45vh; max-height: 50vh; }
             .logo { font-size: 1.1rem; }
             .btn-group { flex-wrap: wrap; }
             .btn { flex: 1; min-width: 80px; }
@@ -1465,6 +1471,9 @@
                     }
                 }
                 
+                // hit된 핀 제거
+                this.obstacles = this.obstacles.filter(obs => !(obs.type === 'peg' && obs.hit));
+                
                 // 카메라 업데이트
                 this.updateCamera();
             }
@@ -1490,7 +1499,10 @@
 
             collideObstacle(ball, obs) {
                 if (obs.type === 'peg') {
-                    this.collideCircle(ball, obs.x, obs.y, obs.radius, ball.restitution);
+                    if (this.collideCircle(ball, obs.x, obs.y, obs.radius, ball.restitution)) {
+                        // 핀에 부딪히면 핀 제거 표시
+                        obs.hit = true;
+                    }
                 } else if (obs.type === 'bumper') {
                     if (this.collideCircle(ball, obs.x, obs.y, obs.radius, 1.0)) {
                         // 범퍼에서 강하게 튕겨나감
