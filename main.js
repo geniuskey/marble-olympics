@@ -3,7 +3,7 @@
  * ------------------------------------------------------------
  * Original Copyright Notice
  *
- * Copyright (c) 2025 geniuskey
+ * Copyright (c) 2025 Euiyun Kim (geniuskey@gmail.com)
  *
  * This web application is an original creation by the developer known as
  * "geniuskey". Any third-party registration of this work, including copyright
@@ -17,7 +17,7 @@
  * - MIT License permits reuse but does NOT abandon authorship or ownership.
  * - Unauthorized registration by third parties shall be considered invalid.
  *
- * Original Creator: geniuskey (geniuskey@gmail.com)
+ * Original Creator: Euiyun Kim (geniuskey@gmail.com)
  * Service Web Page: https://geniuskey.github.io/marble-olympics/
  * ------------------------------------------------------------
  */
