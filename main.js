@@ -1,3 +1,27 @@
+/**
+ * Marble Olympics (구슬 올림픽)
+ * ------------------------------------------------------------
+ * Original Copyright Notice
+ *
+ * Copyright (c) 2025 geniuskey
+ *
+ * This web application is an original creation by the developer known as
+ * "geniuskey". Any third-party registration of this work, including copyright
+ * filings made without the author's consent, does not invalidate the author's
+ * original rights under Korean Copyright Law and international copyright
+ * principles.
+ *
+ * Notes:
+ * - Copyright is automatically granted upon creation (“무조건 자동 발생”).
+ * - Copyright registration by unrelated parties does NOT transfer ownership.
+ * - MIT License permits reuse but does NOT abandon authorship or ownership.
+ * - Unauthorized registration by third parties shall be considered invalid.
+ *
+ * Original Creator: geniuskey (geniuskey@gmail.com)
+ * Service Web Page: https://geniuskey.github.io/marble-olympics/
+ * ------------------------------------------------------------
+ */
+
 // ===== Vector2 =====
 class Vector2 {
     constructor(x = 0, y = 0) { this.x = x; this.y = y; }
